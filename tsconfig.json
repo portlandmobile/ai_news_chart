@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "jsx": "preserve",
+    "lib": ["DOM", "ESNext"],
+    "allowJs": true,
+    "outDir": "./dist"
+  },
+  "include": ["./main.ts", "./index.html"]
+}

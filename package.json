@@ -1,0 +1,30 @@
+{
+  "name": "line-chart-app",
+  "version": "1.0.0",
+  "description": "Interactive line chart web application",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "chart.js": "^4.4.0",
+    "chartjs-adapter-date-fns": "^3.0.0",
+    "date-fns": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/chart.js": "^2.9.41",
+    "@types/node": "^24.1.0",
+    "typescript": "^5.8.3",
+    "vite": "^5.0.0"
+  },
+  "keywords": [
+    "chart",
+    "visualization",
+    "line-chart",
+    "interactive"
+  ],
+  "author": "",
+  "license": "MIT"
+}
