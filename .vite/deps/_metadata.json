@@ -1,25 +1,25 @@
 {
-  "hash": "b7f0b96c",
+  "hash": "4c512960",
   "configHash": "1f149785",
-  "lockfileHash": "fabcbb1c",
-  "browserHash": "3697fc50",
+  "lockfileHash": "8e6e2c02",
+  "browserHash": "f2a010c0",
   "optimized": {
     "chart.js/auto": {
       "src": "../../node_modules/chart.js/auto/auto.js",
       "file": "chart__js_auto.js",
-      "fileHash": "a79055d1",
+      "fileHash": "62897a70",
       "needsInterop": false
     },
     "chartjs-adapter-date-fns": {
       "src": "../../node_modules/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.esm.js",
       "file": "chartjs-adapter-date-fns.js",
-      "fileHash": "679f4365",
+      "fileHash": "f365a4be",
       "needsInterop": false
     },
     "date-fns": {
       "src": "../../node_modules/date-fns/index.js",
       "file": "date-fns.js",
-      "fileHash": "eff6a269",
+      "fileHash": "0ad2751a",
       "needsInterop": false
     }
   },

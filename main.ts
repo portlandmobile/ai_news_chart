@@ -3,23 +3,23 @@ import 'chartjs-adapter-date-fns';
 import { format, parseISO } from 'date-fns';
 
 class StockChartApp {
-    private chart: Chart | null = null;
+    private chart: any = null;
     private currentStockData: any[] = [];
     private currentStockInfo: any = null;
     private apiBaseUrl: string = 'http://localhost:5001/api';
 
     // DOM elements
-    private chartCanvas: HTMLCanvasElement;
-    private chartTypeSelect: HTMLSelectElement;
-    private timeRangeSelect: HTMLSelectElement;
-    private animationSpeedSelect: HTMLSelectElement;
-    private refreshDataBtn: HTMLButtonElement;
-    private stockSymbolInput: HTMLInputElement;
-    private searchStockBtn: HTMLButtonElement;
-    private stockInfoDiv: HTMLDivElement;
-    private stockNameH3: HTMLHeadingElement;
-    private stockDetailsP: HTMLParagraphElement;
-    private textList: HTMLDivElement;
+    private chartCanvas!: HTMLCanvasElement;
+    private chartTypeSelect!: HTMLSelectElement;
+    private timeRangeSelect!: HTMLSelectElement;
+    private animationSpeedSelect!: HTMLSelectElement;
+    private refreshDataBtn!: HTMLButtonElement;
+    private stockSymbolInput!: HTMLInputElement;
+    private searchStockBtn!: HTMLButtonElement;
+    private stockInfoDiv!: HTMLDivElement;
+    private stockNameH3!: HTMLHeadingElement;
+    private stockDetailsP!: HTMLParagraphElement;
+    private textList!: HTMLDivElement;
 
     constructor() {
         this.initializeElements();
@@ -178,30 +178,47 @@ class StockChartApp {
         const ctx = this.chartCanvas.getContext('2d');
         if (!ctx) return;
 
-        const chartData = this.currentStockData.map(item => ({
+        const priceData = this.currentStockData.map(item => ({
             x: parseISO(item.date),
             y: item.close
+        }));
+
+        const volumeData = this.currentStockData.map(item => ({
+            x: parseISO(item.date),
+            y: item.volume
         }));
 
         const isAreaChart = this.chartTypeSelect.value === 'area';
 
         this.chart = new Chart(ctx, {
-            type: this.getChartType(),
+            type: 'line' as const,
             data: {
-                datasets: [{
-                    label: 'Stock Price',
-                    data: chartData,
-                    borderColor: '#667eea',
-                    backgroundColor: isAreaChart ? 'rgba(102, 126, 234, 0.1)' : 'transparent',
-                    fill: isAreaChart,
-                    borderWidth: 3,
-                    pointBackgroundColor: '#667eea',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    tension: this.chartTypeSelect.value === 'spline' ? 0.4 : 0,
-                }]
+                datasets: [
+                    {
+                        label: 'Stock Price',
+                        data: priceData,
+                        borderColor: '#667eea',
+                        backgroundColor: isAreaChart ? 'rgba(102, 126, 234, 0.1)' : 'transparent',
+                        fill: isAreaChart,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#667eea',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        tension: this.chartTypeSelect.value === 'spline' ? 0.4 : 0,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Volume',
+                        data: volumeData,
+                        type: 'bar' as const,
+                        backgroundColor: 'rgba(255, 99, 132, 0.3)',
+                        borderColor: 'rgba(255, 99, 132, 0.8)',
+                        borderWidth: 1,
+                        yAxisID: 'y1'
+                    }
+                ]
             },
             options: {
                 responsive: true,
@@ -232,7 +249,12 @@ class StockChartApp {
                                 return format(date, 'MMM dd, yyyy');
                             },
                             label: (context) => {
-                                return `Price: $${context.parsed.y.toFixed(2)}`;
+                                if (context.dataset.label === 'Stock Price') {
+                                    return `Price: $${context.parsed.y.toFixed(2)}`;
+                                } else if (context.dataset.label === 'Volume') {
+                                    return `Volume: ${context.parsed.y.toLocaleString()}`;
+                                }
+                                return context.dataset.label + ': ' + context.parsed.y;
                             }
                         }
                     }
@@ -257,10 +279,12 @@ class StockChartApp {
                         }
                     },
                     y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
                         beginAtZero: false,
                         grid: {
-                            color: 'rgba(0, 0, 0, 0.1)',
-                            drawBorder: false
+                            color: 'rgba(0, 0, 0, 0.1)'
                         },
                         ticks: {
                             color: '#666',
@@ -268,6 +292,30 @@ class StockChartApp {
                                 size: 12
                             },
                             callback: (value) => `$${value}`
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        beginAtZero: true,
+                        grid: {
+                            drawOnChartArea: false
+                        },
+                        ticks: {
+                            color: '#ff6384',
+                            font: {
+                                size: 10
+                            },
+                            callback: (value: any) => {
+                                const numValue = Number(value);
+                                if (numValue >= 1e6) {
+                                    return `${(numValue / 1e6).toFixed(1)}M`;
+                                } else if (numValue >= 1e3) {
+                                    return `${(numValue / 1e3).toFixed(1)}K`;
+                                }
+                                return numValue.toLocaleString();
+                            }
                         }
                     }
                 }
