@@ -54,23 +54,29 @@
             <button id="refreshData" class="btn-primary">Refresh Data</button>
         </div>
 
-        <div class="chart-container">
-            <div class="chart-wrapper">
-                <canvas id="lineChart"></canvas>
-            </div>
-        </div>
+        <div class="main-content">
+            <div class="left-column">
+                <div class="chart-container">
+                    <div class="chart-wrapper">
+                        <canvas id="lineChart"></canvas>
+                    </div>
+                </div>
 
-        <div class="news-container">
-            <h3>📰 News</h3>
-            <div class="news-list" id="newsList">
-                <!-- News will be populated here -->
+                <div class="text-list-container">
+                    <h3>📝 Data Entries</h3>
+                    <div class="text-list" id="textList">
+                        <!-- Mock data will be populated here -->
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <div class="text-list-container">
-            <h3>📝 Data Entries</h3>
-            <div class="text-list" id="textList">
-                <!-- Mock data will be populated here -->
+            <div class="right-column">
+                <div class="news-container">
+                    <h3>📰 News</h3>
+                    <div class="news-list" id="newsList">
+                        <!-- News will be populated here -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>

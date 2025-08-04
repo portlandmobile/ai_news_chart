@@ -272,6 +272,24 @@ body {
         min-width: auto;
     }
     
+    .main-content {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .left-column {
+        flex: none;
+    }
+    
+    .right-column {
+        flex: none;
+        min-width: auto;
+    }
+    
+    .news-container {
+        position: static;
+    }
+    
     .chart-container {
         grid-template-columns: 1fr;
     }
@@ -417,6 +435,25 @@ body {
     padding: 20px;
 }
 
+/* Two-column layout */
+.main-content {
+    display: flex;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.left-column {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.right-column {
+    flex: 1;
+    min-width: 350px;
+}
+
 /* News container styling */
 .news-container {
     background: rgba(255, 255, 255, 0.95);
@@ -425,18 +462,21 @@ body {
     padding: 24px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.1);
     border: 1px solid rgba(255,255,255,0.2);
-    margin-top: 30px;
+    margin-top: 0;
+    height: 600px;
+    position: sticky;
+    top: 20px;
 }
 
 .news-container h3 {
     color: #333;
     margin-bottom: 20px;
-    font-size: 1.3rem;
+    font-size: 0.78rem;
     font-weight: 600;
 }
 
 .news-list {
-    max-height: 400px;
+    height: 520px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -482,19 +522,19 @@ body {
 .news-date {
     font-weight: 600;
     color: #ff6384;
-    margin-bottom: 8px;
-    font-size: 0.9rem;
+    margin-bottom: 4px;
+    font-size: 0.54rem;
 }
 
 .news-title {
     color: #555;
     margin-bottom: 8px;
-    font-size: 0.95rem;
+    font-size: 0.57rem;
     line-height: 1.4;
 }
 
 .news-link {
-    font-size: 0.85rem;
+    font-size: 0.51rem;
     color: #ff6384;
     text-decoration: none;
     word-break: break-all;

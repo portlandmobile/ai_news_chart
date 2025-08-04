@@ -118,12 +118,11 @@ def getStockNewsTT(stockSym):
         
         ttdf['time'] = pd.to_datetime(ttdf['time'], unit="ms")
         ttdf['time'] = ttdf['time'].dt.date
-        ttdf['title'] = ttdf['title'].str.slice(0, 90) + "..." + "<br>"
+        ttdf['title'] = ttdf['title'].str.slice(0, 90) + "..."
         ttdf = ttdf.rename(columns={"time": "pubdate", "url": "link"})
         
-        # Combine all titles in case there are multiple of them in a single day
-        ttdf = ttdf.groupby('pubdate').agg({'title': 'sum', 'link': 'sum'})
-        ttdf = ttdf.reset_index()
+        # Sort by date (newest first) and remove duplicates
+        ttdf = ttdf.sort_values('pubdate', ascending=False).drop_duplicates(subset=['title', 'pubdate'])
         
         logger.info(f"Successfully fetched {len(ttdf)} news entries for {stockSym}")
         return ttdf

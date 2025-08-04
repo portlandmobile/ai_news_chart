@@ -152,7 +152,7 @@ class StockChartApp {
         this.newsList.innerHTML = news.map(item => `
             <div class="news-entry">
                 <div class="news-date">${item.date}</div>
-                <div class="news-title">${item.title}</div>
+                <div class="news-title">${item.title.length > 80 ? item.title.substring(0, 80) + '...' : item.title}</div>
                 <a href="${item.link}" target="_blank" class="news-link">Read more →</a>
             </div>
         `).join('');
