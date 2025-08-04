@@ -161,34 +161,37 @@ class StockChartApp {
         try {
             console.log('Scrolling to news date:', targetDate);
             
-            const newsEntries = this.newsList.querySelectorAll('.news-entry');
-            console.log('Found news entries:', newsEntries.length);
+            // Get scroll info for the target date
+            const scrollInfo = this.getNewsDateScrollInfo(targetDate);
             
-            for (let i = 0; i < newsEntries.length; i++) {
-                const entry = newsEntries[i] as HTMLElement;
-                const dateElement = entry.querySelector('.news-date');
+            if (scrollInfo.found) {
+                console.log('Found target date, scrolling to position:', scrollInfo.scrollPosition);
                 
-                if (dateElement && dateElement.textContent === targetDate) {
-                    console.log('Found matching news entry for date:', targetDate);
-                    
+                // Scroll to the exact position
+                this.newsList.scrollTo({
+                    top: scrollInfo.scrollPosition,
+                    behavior: 'smooth'
+                });
+                
+                // Find and highlight the element
+                const newsEntries = this.newsList.querySelectorAll('.news-entry');
+                const targetEntry = scrollInfo.index !== undefined ? newsEntries[scrollInfo.index] as HTMLElement : null;
+                
+                if (targetEntry) {
                     // Add a brief highlight effect
-                    entry.style.backgroundColor = 'rgba(255, 99, 132, 0.2)';
-                    entry.style.transform = 'scale(1.02)';
-                    
-                    // Scroll to the element
-                    entry.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'center' 
-                    });
+                    targetEntry.style.backgroundColor = 'rgba(255, 99, 132, 0.2)';
+                    targetEntry.style.transform = 'scale(1.02)';
                     
                     // Remove highlight after 2 seconds
                     setTimeout(() => {
-                        entry.style.backgroundColor = '';
-                        entry.style.transform = '';
+                        targetEntry.style.backgroundColor = '';
+                        targetEntry.style.transform = '';
                     }, 2000);
-                    
-                    break;
                 }
+                
+                console.log('Scroll completed');
+            } else {
+                console.log('Target date not found:', targetDate);
             }
         } catch (error) {
             console.error('Error scrolling to news date:', error);
@@ -208,6 +211,50 @@ class StockChartApp {
             console.log('Scroll to middle completed');
         } catch (error) {
             console.error('Error scrolling to news middle:', error);
+        }
+    }
+
+    private getNewsDateScrollInfo(targetDate: string) {
+        try {
+            console.log(`Looking for news date: ${targetDate}`);
+            console.log(`Total news list scroll height: ${this.newsList.scrollHeight}`);
+            
+            const newsEntries = this.newsList.querySelectorAll('.news-entry');
+            console.log(`Total news entries found: ${newsEntries.length}`);
+            
+            let cumulativeHeight = 0;
+            
+            for (let i = 0; i < newsEntries.length; i++) {
+                const entry = newsEntries[i] as HTMLElement;
+                const dateElement = entry.querySelector('.news-date');
+                const entryHeight = entry.offsetHeight;
+                
+                console.log(`Entry ${i}: date="${dateElement?.textContent}", height=${entryHeight}, cumulative=${cumulativeHeight}`);
+                
+                if (dateElement && dateElement.textContent === targetDate) {
+                    console.log(`🎯 FOUND TARGET DATE: ${targetDate}`);
+                    console.log(`   Entry index: ${i}`);
+                    console.log(`   Entry height: ${entryHeight}`);
+                    console.log(`   Scroll position to reach this entry: ${cumulativeHeight}`);
+                    console.log(`   Entry offsetTop: ${entry.offsetTop}`);
+                    return {
+                        found: true,
+                        index: i,
+                        height: entryHeight,
+                        scrollPosition: cumulativeHeight,
+                        offsetTop: entry.offsetTop
+                    };
+                }
+                
+                cumulativeHeight += entryHeight;
+            }
+            
+            console.log(`❌ Target date ${targetDate} not found`);
+            return { found: false };
+            
+        } catch (error) {
+            console.error('Error getting news date scroll info:', error);
+            return { found: false, error: error };
         }
     }
 
@@ -417,11 +464,29 @@ class StockChartApp {
                                     }
                                 } else {
                                     console.log('No data point found for this index');
+                                    // Try alternative method to get the date
+                                    console.log('Trying alternative date access method...');
+                                    
+                                    // Access the dataset data directly
+                                    const priceData = this.chart.data.datasets[0].data;
+                                    if (priceData && priceData[dataIndex]) {
+                                        const altDataPoint = priceData[dataIndex];
+                                        if (altDataPoint && altDataPoint.x) {
+                                            const date = new Date(altDataPoint.x);
+                                            const dateStr = date.toISOString().split('T')[0];
+                                            
+                                            console.log('Alternative clicked date:', dateStr);
+                                            
+                                            // Check if this date has news
+                                            if (this.currentNewsData.some(news => news.date === dateStr)) {
+                                                console.log('Found news for this date, scrolling...');
+                                                this.scrollToNewsDate(dateStr);
+                                            } else {
+                                                console.log('No news found for this date');
+                                            }
+                                        }
+                                    }
                                 }
-                                
-                                // Test scroll to middle of news box on ANY chart click
-                                console.log('Testing scroll to middle of news box...');
-                                this.scrollToNewsMiddle();
                             } else {
                                 console.log('Click was not on price line or invalid element');
                             }
