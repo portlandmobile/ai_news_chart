@@ -20,6 +20,7 @@ class StockChartApp {
     private stockNameH3!: HTMLHeadingElement;
     private stockDetailsP!: HTMLParagraphElement;
     private textList!: HTMLDivElement;
+    private newsList!: HTMLDivElement;
 
     constructor() {
         this.initializeElements();
@@ -39,6 +40,7 @@ class StockChartApp {
         this.stockNameH3 = document.getElementById('stockName') as HTMLHeadingElement;
         this.stockDetailsP = document.getElementById('stockDetails') as HTMLParagraphElement;
         this.textList = document.getElementById('textList') as HTMLDivElement;
+        this.newsList = document.getElementById('newsList') as HTMLDivElement;
     }
 
     private bindEvents() {
@@ -92,6 +94,7 @@ class StockChartApp {
             this.displayStockInfo();
             this.renderChart();
             this.generateTextList();
+            await this.loadStockNews(); // Load news data
             this.showError(''); // Clear any previous errors
 
         } catch (error) {
@@ -114,6 +117,45 @@ class StockChartApp {
 
         this.stockSymbolInput.value = symbol;
         await this.loadStockData();
+    }
+
+    private async loadStockNews() {
+        const symbol = this.stockSymbolInput.value.trim().toUpperCase();
+        
+        if (!symbol) {
+            return;
+        }
+
+        try {
+            console.log(`Loading news for ${symbol}`);
+            const response = await fetch(`${this.apiBaseUrl}/stock-news-tt?symbol=${symbol}`);
+            const data = await response.json();
+            
+            if (response.ok && data.success) {
+                this.displayNews(data.news);
+            } else {
+                console.warn('Failed to load news:', data.error);
+                this.displayNews([]);
+            }
+        } catch (error) {
+            console.error('Error loading news:', error);
+            this.displayNews([]);
+        }
+    }
+
+    private displayNews(news: any[]) {
+        if (!news.length) {
+            this.newsList.innerHTML = '<p class="no-data">No news available for this stock</p>';
+            return;
+        }
+
+        this.newsList.innerHTML = news.map(item => `
+            <div class="news-entry">
+                <div class="news-date">${item.date}</div>
+                <div class="news-title">${item.title}</div>
+                <a href="${item.link}" target="_blank" class="news-link">Read more →</a>
+            </div>
+        `).join('');
     }
 
     private displayStockInfo() {

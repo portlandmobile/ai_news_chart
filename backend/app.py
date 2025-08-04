@@ -24,7 +24,7 @@ def getHistoricPrice(stockSym):
     """
     try:
         logger.info(f"Attempting to get historic price data for {stockSym}")
-        yfdf = yf.download(stockSym, pd.datetime.today() - pd.DateOffset(90, 'D'), pd.datetime.today(), progress=False, timeout=30)
+        yfdf = yf.download(tickers={stockSym},period='3mo')
         
         if yfdf.empty:
             logger.warning(f"No data returned from yfinance for {stockSym}, using mock data")
@@ -74,6 +74,63 @@ def generateMockHistoricPrice(stockSym):
         current_date += timedelta(days=1)
     
     return pd.DataFrame(mock_data)
+
+def getStockNewsTT(stockSym):
+    """
+    Get stock news from TickerTick API with SeekingAlpha and TickerReport sources
+    """
+    try:
+        logger.info(f"Fetching news for {stockSym} from TickerTick API")
+        
+        continueloop = 1
+        url = ""
+        text = ""
+        hours_ago = 1
+        lastID = 0
+        urllink = f"https://api.tickertick.com/feed?q=(and tt:{stockSym} (or s:tickerreport s:seekingalpha))&lang=en&n=200"
+        ttdf = pd.DataFrame()
+        
+        while continueloop != 0:
+            url = requests.get(urllink, timeout=30)
+            text = url.text
+            ttjson = json.loads(text)
+            tmpdf = json_normalize(ttjson['stories']) 
+            tmpdf['time'] = pd.to_datetime(tmpdf['time'], unit="ms")
+            ttdf = pd.concat([ttdf, tmpdf], axis=0)
+            
+            if (ttdf.iloc[-1]['time'] > datetime.today() - timedelta(days=90)):
+                lastdate = ttdf.iloc[-1]['time']
+                hour_offset = int((datetime.today() - lastdate).total_seconds() / 3600)
+                hours_ago = hours_ago + hour_offset
+                urllink = f"https://api.tickertick.com/feed?q=(and tt:{stockSym} (or s:tickerreport s:seekingalpha))&lang=en&hours_ago={hours_ago}"
+                
+                # Attempt to use fin_news and last story ID
+                lastID = ttdf.iloc[-1]['id']
+                urllink = f"https://api.tickertick.com/feed?q=(and tt:{stockSym} (or s:tickerreport s:seekingalpha))&lang=en&n=200&last={lastID}"
+                
+                # Temp using 2 to stop the loop
+                if continueloop < 2:  # in case of runaway train
+                    continueloop = continueloop + 1
+                else:
+                    continueloop = 0
+            else:
+                continueloop = 0
+        
+        ttdf['time'] = pd.to_datetime(ttdf['time'], unit="ms")
+        ttdf['time'] = ttdf['time'].dt.date
+        ttdf['title'] = ttdf['title'].str.slice(0, 90) + "..." + "<br>"
+        ttdf = ttdf.rename(columns={"time": "pubdate", "url": "link"})
+        
+        # Combine all titles in case there are multiple of them in a single day
+        ttdf = ttdf.groupby('pubdate').agg({'title': 'sum', 'link': 'sum'})
+        ttdf = ttdf.reset_index()
+        
+        logger.info(f"Successfully fetched {len(ttdf)} news entries for {stockSym}")
+        return ttdf
+        
+    except Exception as e:
+        logger.error(f"Error fetching news for {stockSym}: {str(e)}")
+        return pd.DataFrame()
 
 @app.route('/api/stock-data', methods=['GET'])
 def get_stock_data():
@@ -470,6 +527,51 @@ def get_historic_price_api():
         logger.error(f"Error in historic price API: {str(e)}")
         return jsonify({
             'error': f'Failed to fetch historic price data: {str(e)}',
+            'symbol': symbol if 'symbol' in locals() else 'Unknown'
+        }), 500
+
+@app.route('/api/stock-news-tt', methods=['GET'])
+def get_stock_news_tt_api():
+    """
+    Get stock news from TickerTick API using getStockNewsTT function
+    Query parameters:
+    - symbol: Stock symbol (e.g., 'AAPL', 'GOOGL')
+    """
+    try:
+        symbol = request.args.get('symbol', 'AAPL').upper()
+        
+        logger.info(f"Fetching TickerTick news for {symbol}")
+        
+        # Get news data using the new function
+        news_df = getStockNewsTT(symbol)
+        
+        if news_df.empty:
+            return jsonify({
+                'error': f'No news found for symbol {symbol}',
+                'symbol': symbol
+            }), 404
+        
+        # Convert DataFrame to JSON-friendly format
+        news_list = []
+        for _, row in news_df.iterrows():
+            news_list.append({
+                'date': row['pubdate'].strftime('%Y-%m-%d') if hasattr(row['pubdate'], 'strftime') else str(row['pubdate']),
+                'title': row['title'],
+                'link': row['link']
+            })
+        
+        return jsonify({
+            'success': True,
+            'symbol': symbol,
+            'news': news_list,
+            'count': len(news_list),
+            'note': 'News from TickerTick API (SeekingAlpha & TickerReport)'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in stock news TT API: {str(e)}")
+        return jsonify({
+            'error': f'Failed to fetch news: {str(e)}',
             'symbol': symbol if 'symbol' in locals() else 'Unknown'
         }), 500
 
