@@ -6,6 +6,7 @@ class StockChartApp {
     private chart: any = null;
     private currentStockData: any[] = [];
     private currentStockInfo: any = null;
+    private currentNewsData: any[] = [];
     private apiBaseUrl: string = 'http://localhost:5001/api';
 
     // DOM elements
@@ -132,15 +133,23 @@ class StockChartApp {
             const data = await response.json();
             
             if (response.ok && data.success) {
+                this.currentNewsData = data.news;
                 this.displayNews(data.news);
+                this.updateChartWithNews(); // Update chart to highlight news dates
             } else {
                 console.warn('Failed to load news:', data.error);
+                this.currentNewsData = [];
                 this.displayNews([]);
+                this.updateChartWithNews(); // Update chart even if no news
             }
         } catch (error) {
             console.error('Error loading news:', error);
             this.displayNews([]);
         }
+    }
+
+    private getNewsDates(): string[] {
+        return this.currentNewsData.map(item => item.date);
     }
 
     private displayNews(news: any[]) {
@@ -149,13 +158,32 @@ class StockChartApp {
             return;
         }
 
-        this.newsList.innerHTML = news.map(item => `
-            <div class="news-entry">
-                <div class="news-date">${item.date}</div>
-                <div class="news-title">${item.title.length > 80 ? item.title.substring(0, 80) + '...' : item.title}</div>
-                <a href="${item.link}" target="_blank" class="news-link">Read more →</a>
-            </div>
-        `).join('');
+        // Group news by date
+        const groupedNews = news.reduce((groups: any, item) => {
+            const date = item.date;
+            if (!groups[date]) {
+                groups[date] = [];
+            }
+            groups[date].push(item);
+            return groups;
+        }, {});
+
+        // Create HTML for grouped news
+        this.newsList.innerHTML = Object.entries(groupedNews).map(([date, items]: [string, any]) => {
+            const newsItems = items.map((item: any) => `
+                <div class="news-item">
+                    <div class="news-title">${item.title.length > 80 ? item.title.substring(0, 80) + '...' : item.title}</div>
+                    <a href="${item.link}" target="_blank" class="news-link">Read more →</a>
+                </div>
+            `).join('');
+
+            return `
+                <div class="news-entry">
+                    <div class="news-date">${date}</div>
+                    ${newsItems}
+                </div>
+            `;
+        }).join('');
     }
 
     private displayStockInfo() {
@@ -220,6 +248,9 @@ class StockChartApp {
         const ctx = this.chartCanvas.getContext('2d');
         if (!ctx) return;
 
+        // Get news dates for highlighting
+        const newsDates = this.getNewsDates();
+
         const priceData = this.currentStockData.map(item => ({
             x: parseISO(item.date),
             y: item.close
@@ -243,11 +274,26 @@ class StockChartApp {
                         backgroundColor: isAreaChart ? 'rgba(102, 126, 234, 0.1)' : 'transparent',
                         fill: isAreaChart,
                         borderWidth: 3,
-                        pointBackgroundColor: '#667eea',
-                        pointBorderColor: '#fff',
+                        pointBackgroundColor: (context: any) => {
+                            const dataPoint = context.parsed;
+                            const date = new Date(dataPoint.x);
+                            const dateStr = date.toISOString().split('T')[0];
+                            return newsDates.includes(dateStr) ? '#ff6384' : '#667eea';
+                        },
+                        pointBorderColor: (context: any) => {
+                            const dataPoint = context.parsed;
+                            const date = new Date(dataPoint.x);
+                            const dateStr = date.toISOString().split('T')[0];
+                            return newsDates.includes(dateStr) ? '#fff' : '#fff';
+                        },
                         pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
+                        pointRadius: (context: any) => {
+                            const dataPoint = context.parsed;
+                            const date = new Date(dataPoint.x);
+                            const dateStr = date.toISOString().split('T')[0];
+                            return newsDates.includes(dateStr) ? 6 : 4;
+                        },
+                        pointHoverRadius: 8,
                         tension: this.chartTypeSelect.value === 'spline' ? 0.4 : 0,
                         yAxisID: 'y'
                     },
@@ -366,6 +412,12 @@ class StockChartApp {
     }
 
     private updateChart() {
+        if (this.chart) {
+            this.renderChart();
+        }
+    }
+
+    private updateChartWithNews() {
         if (this.chart) {
             this.renderChart();
         }
