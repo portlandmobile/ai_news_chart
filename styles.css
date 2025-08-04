@@ -511,6 +511,7 @@ body {
     line-height: 1.4;
     color: #333;
     transition: all 0.3s ease;
+    cursor: pointer;
 }
 
 .news-entry:hover {

@@ -42,6 +42,11 @@ class StockChartApp {
         this.stockDetailsP = document.getElementById('stockDetails') as HTMLParagraphElement;
         this.textList = document.getElementById('textList') as HTMLDivElement;
         this.newsList = document.getElementById('newsList') as HTMLDivElement;
+        
+        // Add click event listener to chart canvas as fallback
+        this.chartCanvas.addEventListener('click', (event) => {
+            console.log('Canvas clicked directly');
+        });
     }
 
     private bindEvents() {
@@ -150,6 +155,60 @@ class StockChartApp {
 
     private getNewsDates(): string[] {
         return this.currentNewsData.map(item => item.date);
+    }
+
+    private scrollToNewsDate(targetDate: string) {
+        try {
+            console.log('Scrolling to news date:', targetDate);
+            
+            const newsEntries = this.newsList.querySelectorAll('.news-entry');
+            console.log('Found news entries:', newsEntries.length);
+            
+            for (let i = 0; i < newsEntries.length; i++) {
+                const entry = newsEntries[i] as HTMLElement;
+                const dateElement = entry.querySelector('.news-date');
+                
+                if (dateElement && dateElement.textContent === targetDate) {
+                    console.log('Found matching news entry for date:', targetDate);
+                    
+                    // Add a brief highlight effect
+                    entry.style.backgroundColor = 'rgba(255, 99, 132, 0.2)';
+                    entry.style.transform = 'scale(1.02)';
+                    
+                    // Scroll to the element
+                    entry.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                    
+                    // Remove highlight after 2 seconds
+                    setTimeout(() => {
+                        entry.style.backgroundColor = '';
+                        entry.style.transform = '';
+                    }, 2000);
+                    
+                    break;
+                }
+            }
+        } catch (error) {
+            console.error('Error scrolling to news date:', error);
+        }
+    }
+
+    private scrollToNewsMiddle() {
+        try {
+            console.log('Scrolling to middle of news box...');
+            
+            // Scroll the news list to the middle
+            this.newsList.scrollTo({
+                top: this.newsList.scrollHeight / 2,
+                behavior: 'smooth'
+            });
+            
+            console.log('Scroll to middle completed');
+        } catch (error) {
+            console.error('Error scrolling to news middle:', error);
+        }
     }
 
     private displayNews(news: any[]) {
@@ -318,6 +377,60 @@ class StockChartApp {
                 interaction: {
                     intersect: false,
                     mode: 'index'
+                },
+                onClick: (event: any, elements: any) => {
+                    try {
+                        console.log('Chart clicked!');
+                        console.log('Elements:', elements);
+                        
+                        if (elements && elements.length > 0) {
+                            const element = elements[0];
+                            console.log('Element:', element);
+                            console.log('Element datasetIndex:', element.datasetIndex);
+                            
+                            // Only handle clicks on the price line (dataset 0), not volume bars (dataset 1)
+                            if (element.datasetIndex === 0) {
+                                console.log('Element parsed:', element.parsed);
+                                console.log('Element index:', element.index);
+                                
+                                // Get the data point from the chart data
+                                const dataIndex = element.index;
+                                console.log('Chart data labels:', this.chart.data.labels);
+                                console.log('Chart data length:', this.chart.data.labels?.length);
+                                console.log('Data index:', dataIndex);
+                                
+                                const dataPoint = this.chart.data.labels?.[dataIndex];
+                                
+                                if (dataPoint) {
+                                    const date = new Date(dataPoint);
+                                    const dateStr = date.toISOString().split('T')[0];
+                                    
+                                    console.log('Clicked date:', dateStr);
+                                    console.log('Available news dates:', this.currentNewsData.map(n => n.date));
+                                    
+                                    // Check if this date has news
+                                    if (this.currentNewsData.some(news => news.date === dateStr)) {
+                                        console.log('Found news for this date, scrolling...');
+                                        this.scrollToNewsDate(dateStr);
+                                    } else {
+                                        console.log('No news found for this date');
+                                    }
+                                } else {
+                                    console.log('No data point found for this index');
+                                }
+                                
+                                // Test scroll to middle of news box on ANY chart click
+                                console.log('Testing scroll to middle of news box...');
+                                this.scrollToNewsMiddle();
+                            } else {
+                                console.log('Click was not on price line or invalid element');
+                            }
+                        } else {
+                            console.log('No elements found in click');
+                        }
+                    } catch (error) {
+                        console.error('Error handling chart click:', error);
+                    }
                 },
                 plugins: {
                     legend: {
