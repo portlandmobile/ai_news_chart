@@ -1,0 +1,36 @@
+runtime: python312
+entrypoint: gunicorn -b :$PORT app:app
+
+instance_class: F1
+
+automatic_scaling:
+  target_cpu_utilization: 0.65
+  min_instances: 0  # Scale to zero when no traffic
+  max_instances: 10
+  min_idle_instances: 0  # No idle instances
+  max_idle_instances: 0  # No idle instances
+  min_pending_latency: 30ms  # Start instance if request waits > 30ms
+  max_pending_latency: 10s   # Start instance if request waits > 10s
+
+env_variables:
+  FLASK_ENV: production
+
+handlers:
+  # Handler for your JavaScript files
+  - url: /(.+\.js)
+    static_files: \1
+    upload: .+\.js
+    mime_type: application/javascript
+  
+  - url: /assets/(.+\.js)
+    static_files: \1
+    upload: .+\.js
+    mime_type: application/javascript  
+
+  # API routes go to the Flask app
+  - url: /api/.*
+    script: auto
+    
+  # All other routes go to the Flask app (which handles MIME types)
+  - url: /.*
+    script: auto

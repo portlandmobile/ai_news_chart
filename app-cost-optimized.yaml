@@ -1,0 +1,17 @@
+runtime: python312
+entrypoint: gunicorn -b :$PORT app:app
+
+instance_class: F1
+
+automatic_scaling:
+  target_cpu_utilization: 0.8  # Higher utilization for cost efficiency
+  min_instances: 0  # Scale to zero when no traffic
+  max_instances: 5  # Lower max instances
+  min_idle_instances: 0  # No idle instances
+  max_idle_instances: 0  # No idle instances
+  min_pending_latency: 100ms  # Allow slightly longer startup time
+  max_pending_latency: 15s    # Allow longer startup time
+  cool_down_period_sec: 120   # Wait 2 minutes before scaling down
+
+env_variables:
+  FLASK_ENV: production 
