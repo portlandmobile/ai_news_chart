@@ -15,48 +15,48 @@
 <body>
     <div class="container">
         <header class="header">
-            <h1>📈 Interactive Stock Chart</h1>
-            <p>Real-time stock data visualization with Yahoo Finance</p>
+            <h1>📈 Vizchart - Interactive visualizations</h1>
+            <h2>Click the blue dots to see related news for that day</h2>
         </header>
 
-        <div class="stock-search">
-            <div class="search-container">
-                <input type="text" id="stockSymbol" placeholder="Enter stock symbol (e.g., AAPL)" value="AAPL">
-                <button id="searchStock" class="btn-primary">Search Stock</button>
+        <div class="search-controls-container">
+            <div class="stock-search">
+                <div class="search-container">
+                    <input type="text" id="stockSymbol" placeholder="Enter stock symbol (e.g., AAPL)" value="AAPL">
+                    <button id="searchStock" class="btn-primary">Search Stock</button>
+                </div>
+                <div class="stock-info" id="stockInfo" style="display: none;">
+                    <h3 id="stockName"></h3>
+                    <p id="stockDetails"></p>
+                </div>
             </div>
-            <div class="stock-info" id="stockInfo" style="display: none;">
-                <h3 id="stockName"></h3>
-                <p id="stockDetails"></p>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label for="timeRange">Time Range:</label>
+                    <select id="timeRange">
+                        <option value="7d">7 Days</option>
+                        <option value="2w">2 Weeks</option>
+                        <option value="1mo">1 Month</option>
+                        <option value="3mo" selected>3 Months</option>
+                    </select>
+                </div>
+                <button id="refreshData" class="btn-primary">Refresh Data</button>
             </div>
         </div>
 
-        <div class="controls">
-            <div class="control-group">
-                <label for="chartType">Chart Type:</label>
-                <select id="chartType">
-                    <option value="line" selected>Line Chart</option>
-                    <option value="area">Area Chart</option>
-                    <option value="spline">Spline Chart</option>
-                </select>
-            </div>
-            <div class="control-group">
-                <label for="timeRange">Time Range:</label>
-                <select id="timeRange">
-                    <option value="7d">7 Days</option>
-                    <option value="2w">2 Weeks</option>
-                    <option value="1mo">1 Month</option>
-                    <option value="3mo" selected>3 Months</option>
-                </select>
-            </div>
-            <div class="control-group">
-                <label for="animationSpeed">Animation Speed:</label>
-                <select id="animationSpeed">
-                    <option value="slow">Slow</option>
-                    <option value="normal" selected>Normal</option>
-                    <option value="fast">Fast</option>
-                </select>
-            </div>
-            <button id="refreshData" class="btn-primary">Refresh Data</button>
+        <!-- Hidden controls for default values -->
+        <div style="display: none;">
+            <select id="chartType">
+                <option value="line" selected>Line Chart</option>
+                <option value="area">Area Chart</option>
+                <option value="spline">Spline Chart</option>
+            </select>
+            <select id="animationSpeed">
+                <option value="slow">Slow</option>
+                <option value="normal">Normal</option>
+                <option value="fast" selected>Fast</option>
+            </select>
         </div>
 
         <div class="main-content">

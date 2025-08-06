@@ -17,10 +17,6 @@ CORS(app)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Simple in-memory cache for news data to minimize API calls
-news_cache = {}
-CACHE_DURATION = 3600  # 1 hour cache duration
-
 def getHistoricPrice(stockSym):
     """
     Get historical price data for a stock symbol using yfinance
@@ -83,20 +79,9 @@ def generateMockHistoricPrice(stockSym):
 def getStockNewsTT(stockSym):
     """
     Get stock news from TickerTick API with SeekingAlpha and TickerReport sources
-    Uses caching to minimize API calls
     """
-    # Check cache first
-    cache_key = f"news_{stockSym}"
-    current_time = datetime.now()
-    
-    if cache_key in news_cache:
-        cached_data, cache_time = news_cache[cache_key]
-        if (current_time - cache_time).total_seconds() < CACHE_DURATION:
-            logger.info(f"Using cached news data for {stockSym}")
-            return cached_data
-    
     try:
-        logger.info(f"Fetching fresh news for {stockSym} from TickerTick API")
+        logger.info(f"Fetching news for {stockSym} from TickerTick API")
         
         continueloop = 1
         url = ""
@@ -141,11 +126,6 @@ def getStockNewsTT(stockSym):
         ttdf = ttdf.sort_values('pubdate', ascending=False).drop_duplicates(subset=['title', 'pubdate'])
         
         logger.info(f"Successfully fetched {len(ttdf)} news entries for {stockSym}")
-        
-        # Cache the result
-        news_cache[cache_key] = (ttdf, current_time)
-        logger.info(f"Cached news data for {stockSym}")
-        
         return ttdf
         
     except Exception as e:

@@ -37,14 +37,22 @@ body {
     font-weight: 300;
 }
 
+.search-controls-container {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    margin-bottom: 30px;
+}
+
 .stock-search {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     border-radius: 16px;
-    padding: 24px;
-    margin-bottom: 30px;
+    padding: 16px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.1);
     border: 1px solid rgba(255,255,255,0.2);
+    flex-shrink: 0;
+    width: fit-content;
 }
 
 .search-container {
@@ -52,10 +60,11 @@ body {
     gap: 12px;
     align-items: end;
     margin-bottom: 16px;
+    width: fit-content;
 }
 
 .search-container input {
-    flex: 1;
+    width: 200px;
     padding: 12px 16px;
     border: 2px solid #e1e5e9;
     border-radius: 8px;
@@ -94,12 +103,11 @@ body {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     border-radius: 16px;
-    padding: 24px;
-    margin-bottom: 30px;
+    padding: 16px;
     display: flex;
-    gap: 20px;
-    align-items: end;
-    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-start;
+    flex-shrink: 0;
     box-shadow: 0 8px 32px rgba(0,0,0,0.1);
     border: 1px solid rgba(255,255,255,0.2);
 }
@@ -107,8 +115,8 @@ body {
 .control-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    min-width: 150px;
+    gap: 4px;
+    min-width: 120px;
 }
 
 .control-group label {
@@ -118,7 +126,7 @@ body {
 }
 
 .control-group select {
-    padding: 12px 16px;
+    padding: 8px 12px;
     border: 2px solid #e1e5e9;
     border-radius: 8px;
     font-size: 1rem;
