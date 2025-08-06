@@ -120,7 +120,9 @@ class StockChartApp {
         }
         catch (error) {
             console.error('Error loading news:', error);
+            this.currentNewsData = [];
             this.displayNews([]);
+            this.updateChartWithNews(); // Update chart even if error
         }
     }
     getNewsDates() {

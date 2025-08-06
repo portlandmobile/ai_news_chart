@@ -10,6 +10,8 @@ class StockChartApp {
     private apiBaseUrl: string = window.location.hostname === 'localhost' 
         ? 'http://localhost:5001/api' 
         : '/api';
+    private isLoading: boolean = false; // Flag to prevent multiple simultaneous API calls
+    private isLoadingNews: boolean = false; // Flag to prevent multiple simultaneous news API calls
 
     // DOM elements
     private chartCanvas!: HTMLCanvasElement;
@@ -69,6 +71,12 @@ class StockChartApp {
     }
 
     private async loadStockData() {
+        // Prevent multiple simultaneous API calls
+        if (this.isLoading) {
+            console.log('Already loading data, skipping request');
+            return;
+        }
+
         const symbol = this.stockSymbolInput.value.trim().toUpperCase();
         const period = this.timeRangeSelect.value;
 
@@ -77,6 +85,7 @@ class StockChartApp {
             return;
         }
 
+        this.isLoading = true;
         this.showLoading(true);
         this.refreshDataBtn.textContent = 'Loading...';
         this.refreshDataBtn.disabled = true;
@@ -109,6 +118,7 @@ class StockChartApp {
             console.error('Error loading stock data:', error);
             this.showError(`Error loading stock data: ${error instanceof Error ? error.message : 'Unknown error'}`);
         } finally {
+            this.isLoading = false;
             this.showLoading(false);
             this.refreshDataBtn.textContent = 'Refresh Data';
             this.refreshDataBtn.disabled = false;
@@ -128,6 +138,12 @@ class StockChartApp {
     }
 
     private async loadStockNews() {
+        // Prevent multiple simultaneous news API calls
+        if (this.isLoadingNews) {
+            console.log('Already loading news, skipping request');
+            return;
+        }
+
         const symbol = this.stockSymbolInput.value.trim().toUpperCase();
         
         if (!symbol) {
@@ -135,6 +151,7 @@ class StockChartApp {
         }
 
         try {
+            this.isLoadingNews = true;
             console.log(`Loading news for ${symbol}`);
             const response = await fetch(`${this.apiBaseUrl}/stock-news-tt?symbol=${symbol}`);
             const data = await response.json();
@@ -151,7 +168,11 @@ class StockChartApp {
             }
         } catch (error) {
             console.error('Error loading news:', error);
+            this.currentNewsData = [];
             this.displayNews([]);
+            this.updateChartWithNews(); // Update chart even if error
+        } finally {
+            this.isLoadingNews = false;
         }
     }
 
@@ -603,9 +624,34 @@ class StockChartApp {
     }
 
     private updateChartWithNews() {
-        if (this.chart) {
-            this.renderChart();
+        // Only update the chart if it exists and we have data
+        if (this.chart && this.currentStockData.length > 0) {
+            // Instead of full re-render, just update the chart data
+            this.updateChartData();
         }
+    }
+
+    private updateChartData() {
+        if (!this.chart || !this.currentStockData.length) return;
+
+        // Get news dates for highlighting
+        const newsDates = this.getNewsDates();
+        
+        // Update the chart's point colors based on news data
+        this.chart.data.datasets[0].pointBackgroundColor = this.chart.data.datasets[0].data.map((dataPoint: any) => {
+            const date = new Date(dataPoint.x);
+            const dateStr = date.toISOString().split('T')[0];
+            return newsDates.includes(dateStr) ? '#ff6384' : '#667eea';
+        });
+        
+        this.chart.data.datasets[0].pointBorderColor = this.chart.data.datasets[0].data.map((dataPoint: any) => {
+            const date = new Date(dataPoint.x);
+            const dateStr = date.toISOString().split('T')[0];
+            return newsDates.includes(dateStr) ? '#fff' : '#fff';
+        });
+
+        // Update the chart
+        this.chart.update('none'); // Update without animation for better performance
     }
 
     private generateTextList() {
