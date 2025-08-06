@@ -342,22 +342,22 @@ class StockChartApp {
                         pointBackgroundColor: (context) => {
                             const dataIndex = context.dataIndex;
                             const date = labels[dataIndex];
-                            return newsDates.includes(date) ? 'rgba(255, 215, 0, 1)' : 'rgba(255, 99, 132, 1)';
+                            return newsDates.includes(date) ? 'rgba(59, 130, 246, 1)' : 'rgba(255, 99, 132, 1)';
                         },
                         pointBorderColor: (context) => {
                             const dataIndex = context.dataIndex;
                             const date = labels[dataIndex];
-                            return newsDates.includes(date) ? 'rgba(255, 215, 0, 1)' : 'rgba(255, 99, 132, 1)';
+                            return newsDates.includes(date) ? 'rgba(59, 130, 246, 1)' : 'rgba(255, 99, 132, 1)';
                         },
                         pointRadius: (context) => {
                             const dataIndex = context.dataIndex;
                             const date = labels[dataIndex];
-                            return newsDates.includes(date) ? 8 : 4;
+                            return newsDates.includes(date) ? 4 : 4;
                         },
                         pointHoverRadius: (context) => {
                             const dataIndex = context.dataIndex;
                             const date = labels[dataIndex];
-                            return newsDates.includes(date) ? 10 : 6;
+                            return newsDates.includes(date) ? 6 : 6;
                         }
                     },
                     {
@@ -404,11 +404,16 @@ class StockChartApp {
                         position: 'right',
                         title: {
                             display: true,
-                            text: 'Volume'
+                            text: 'Volume (M)'
                         },
                         grid: {
                             drawOnChartArea: false,
                         },
+                        ticks: {
+                            callback: function(value) {
+                                return (value / 1000000).toFixed(1) + 'M';
+                            }
+                        }
                     }
                 },
                 plugins: {
@@ -416,9 +421,9 @@ class StockChartApp {
                         callbacks: {
                             label: function(context) {
                                 if (context.datasetIndex === 0) {
-                                    return `Price: $${context.parsed.y}`;
+                                    return `Price: $${context.parsed.y.toFixed(2)}`;
                                 } else {
-                                    return `Volume: ${context.parsed.y.toLocaleString()}`;
+                                    return `Volume: ${(context.parsed.y / 1000000).toFixed(1)}M`;
                                 }
                             }
                         }
@@ -489,11 +494,11 @@ class StockChartApp {
                 <div class="text-entry">
                     <div class="date">${item.date}</div>
                     <div class="title">
-                        <span>Close: $${item.close}</span>
+                        <span>Close: $${item.close.toFixed(2)}</span>
                         <span class="change ${changeClass}">${changeSymbol}${change.toFixed(2)}%</span>
                     </div>
                     <div class="details">
-                        Open: $${item.open} | High: $${item.high} | Low: $${item.low} | Volume: ${item.volume.toLocaleString()}
+                        Open: $${item.open.toFixed(2)} | High: $${item.high.toFixed(2)} | Low: $${item.low.toFixed(2)} | Volume: ${(item.volume / 1000000).toFixed(1)}M
                     </div>
                 </div>
             `;
