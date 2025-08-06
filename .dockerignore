@@ -1,0 +1,41 @@
+# Node modules and build artifacts
+node_modules/
+dist/
+*.log
+
+# Git and version control
+.git/
+.gitignore
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# App Engine files (not needed for Cloud Run)
+app.yaml
+app-cost-optimized.yaml
+
+# Documentation
+*.md
+DEPLOYMENT*.md
+GCloud_Setup_Guide.txt
+
+# Build scripts
+build.sh
+simple-build.sh
+start.sh
+fix_*.sh 

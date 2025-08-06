@@ -69,7 +69,25 @@ class StockChartApp {
 
         try {
             // Try real data first, fallback to mock data if it fails
-            let response = await fetch(`${this.apiBaseUrl}/stock-data?symbol=${symbol}&period=${period}&interval=1d`);
+            console.log(`API URL: ${this.apiBaseUrl}/stock-data?symbol=${symbol}&period=${period}&interval=1d`);
+            console.log(`Current hostname: ${window.location.hostname}`);
+            console.log(`Current origin: ${window.location.origin}`);
+            
+            let response = await fetch(`${this.apiBaseUrl}/stock-data?symbol=${symbol}&period=${period}&interval=1d`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                signal: AbortSignal.timeout(10000) // 10 second timeout
+            });
+            console.log(`Response status: ${response.status}`);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`API Error ${response.status}: ${errorText}`);
+                throw new Error(`API Error ${response.status}: ${errorText}`);
+            }
+            
             let data = await response.json();
             
             // If real data fails, use mock data
@@ -93,6 +111,9 @@ class StockChartApp {
             
         } catch (error) {
             console.error('Error loading stock data:', error);
+            console.log(`Error type: ${error.constructor.name}`);
+            console.log(`Error message: ${error.message}`);
+            console.log(`Error stack: ${error.stack}`);
             this.showError('Failed to load stock data. Please try again.');
         } finally {
             this.showLoading(false);
